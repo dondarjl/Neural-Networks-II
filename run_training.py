@@ -1,6 +1,3 @@
-print('hola')
-
-
 import os
 import torch
 import torch.optim as optim

@@ -5,7 +5,7 @@ import pandas as pd
 from src.models.small_cnn import SmallCIFARCNN
 from src.models.resnet18 import get_resnet18_cifar
 from src.data_loader import get_cifar10_loaders
-from src.evaluate import sweep_attacks, sweep_calibration
+from src.evaluate import sweep_attacks, sweep_calibration, eval_reliability_diagrams
 from src.utils import get_device, BATCH_SIZE, EPS_LIST, ARCHS, LR, EPOCHS
 
 device = get_device()
@@ -27,7 +27,11 @@ for arch in ARCHS:
     for tag, train_eps in model_paths:
 
         model = get_model(arch)
-        model.load_state_dict(torch.load(f"checkpoints/{arch}/{tag}.pth"))
+        model.load_state_dict(torch.load(
+            f"checkpoints/{arch}/{tag}.pth",
+            map_location=device,
+            weights_only=True,
+        ))
         model.to(device)
 
         # Robustness
@@ -39,6 +43,15 @@ for arch in ARCHS:
         df_cal = sweep_calibration(model, test_loader, device, EPS_LIST)
         df_cal["arch"] = arch
         df_cal["train_eps"] = train_eps
+
+        # Reliability diagrams (at eps=0.08 for illustration)
+        eval_reliability_diagrams(
+            model, test_loader, device,
+            eps=0.08, pgd_steps=40,
+            save_dir="plots",
+            arch_name=arch,
+            training_label=tag,
+        )
 
         all_results.append((df_acc, df_cal))
 

@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from src.utils import get_device
-from src.attacks import fgsm_attack
 from src.attacks import fgsm_attack_train
 
 device = get_device()
