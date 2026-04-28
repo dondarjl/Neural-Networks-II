@@ -1,6 +1,3 @@
-print('hola')
-
-
 import os
 import torch
 import torch.optim as optim
@@ -43,6 +40,8 @@ for arch in ARCHS:
     # 2. ADVERSARIAL MODELS
     # -------------------------
     for eps in EPS_LIST:
+        if eps == 0.0:
+            continue
         model = get_model(arch).to(device)
         optimizer = optim.Adam(model.parameters(), lr=LR)
 

@@ -8,8 +8,13 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
+<<<<<<< HEAD
 from attacks import attack_suite          # fgsm_attack, pgd_attack, attack_suite
 from calibration import (                 # funciones puras
+=======
+from src.attacks import attack_suite          # fgsm_attack, pgd_attack, attack_suite
+from src.calibration import (                 # funciones puras
+>>>>>>> 10c49791c2678f30992e95a84f9f73ba801e3352
     get_predictions,
     compute_ece,
     compute_nll,

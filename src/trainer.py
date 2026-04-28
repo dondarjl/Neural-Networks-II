@@ -1,7 +1,10 @@
 import torch
 import torch.nn.functional as F
 from src.utils import get_device
+<<<<<<< HEAD
 from src.attacks import fgsm_attack
+=======
+>>>>>>> 10c49791c2678f30992e95a84f9f73ba801e3352
 from src.attacks import fgsm_attack_train
 
 device = get_device()
