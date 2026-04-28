@@ -2,7 +2,7 @@ venv/
 __pycache__/
 *.pth
 checkpoints/
-data/
+/data/
 .env
 *.pyc
 data/cifar-10-python.tar.gz
