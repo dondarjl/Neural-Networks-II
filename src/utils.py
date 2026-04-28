@@ -2,11 +2,7 @@ import torch
 
 BATCH_SIZE = 128
 EPS_LIST = [0.0, 0.01, 0.02, 0.04, 0.08]
-<<<<<<< HEAD
-EPOCHS = 20
-=======
 EPOCHS = 10
->>>>>>> 10c49791c2678f30992e95a84f9f73ba801e3352
 LR = 1e-3
 ARCHS = ["smallcnn", "resnet18"]
 

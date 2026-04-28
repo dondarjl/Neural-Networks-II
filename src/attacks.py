@@ -59,13 +59,13 @@ def attack_suite(model, eps, pgd_steps_list=(10, 40)):
 
     if eps > 0:
         suite[f"FGSM (eps={eps:.2f})"] = (
-            lambda x, y: fgsm_attack(model, x, y, eps=eps)
+            lambda x, y, _eps=eps: fgsm_attack(model, x, y, eps=_eps)
         )
         for steps in pgd_steps_list:
             alpha = eps / 4
             suite[f"PGD-{steps} (eps={eps:.2f})"] = (
-                lambda x, y, a=alpha, s=steps:
-                    pgd_attack(model, x, y, eps=eps, alpha=a,
+                lambda x, y, a=alpha, s=steps, _eps=eps:
+                    pgd_attack(model, x, y, eps=_eps, alpha=a,
                                steps=s, random_start=True)
             )
 
