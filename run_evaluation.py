@@ -1,6 +1,7 @@
 import os
 import torch
 import pandas as pd
+from glob import glob
 
 from src.models.small_cnn import SmallCIFARCNN
 from src.models.resnet18 import get_resnet18_cifar
@@ -9,8 +10,23 @@ from src.evaluate import sweep_attacks, sweep_calibration, eval_reliability_diag
 from src.utils import get_device, BATCH_SIZE, EPS_LIST, ARCHS, LR, EPOCHS
 
 device = get_device()
-
 _, test_loader, _ = get_cifar10_loaders(BATCH_SIZE)
+os.makedirs("results", exist_ok=True)
+
+# ── Helpers de reanudación ─────────────────────────────────────────────────────
+
+def checkpoint_path(arch, tag, kind):
+    """Ruta del CSV parcial que actúa como flag de completado."""
+    return f"results/.done_{arch}_{tag}_{kind}.csv"
+
+def is_done(arch, tag, kind):
+    return os.path.exists(checkpoint_path(arch, tag, kind))
+
+def mark_done(df, arch, tag, kind):
+    """Guarda el resultado y marca la tarea como completada."""
+    df.to_csv(checkpoint_path(arch, tag, kind), index=False)
+
+# ── Helpers de modelo ──────────────────────────────────────────────────────────
 
 def get_model(arch):
     if arch == "smallcnn":
@@ -18,7 +34,7 @@ def get_model(arch):
     else:
         return get_resnet18_cifar()
 
-all_results = []
+# ── Loop principal ─────────────────────────────────────────────────────────────
 
 for arch in ARCHS:
 
@@ -26,6 +42,15 @@ for arch in ARCHS:
 
     for tag, train_eps in model_paths:
 
+        acc_done = is_done(arch, tag, "acc")
+        cal_done = is_done(arch, tag, "cal")
+
+        if acc_done and cal_done:
+            print(f"  ↩  Saltando {arch}/{tag} (ya completado)")
+            continue
+
+        # Cargar modelo solo si hay algo que hacer
+        print(f"  ▶  Procesando {arch}/{tag} ...")
         model = get_model(arch)
         model.load_state_dict(torch.load(
             f"checkpoints/{arch}/{tag}.pth",
@@ -35,16 +60,22 @@ for arch in ARCHS:
         model.to(device)
 
         # Robustness
-        df_acc = sweep_attacks(model, test_loader, device, EPS_LIST)
-        df_acc["arch"] = arch
-        df_acc["train_eps"] = train_eps
+        if not acc_done:
+            df_acc = sweep_attacks(model, test_loader, device, EPS_LIST)
+            df_acc["arch"] = arch
+            df_acc["train_eps"] = train_eps
+            mark_done(df_acc, arch, tag, "acc")
+            print(f"     ✓ accuracy guardado")
 
         # Calibration
-        df_cal = sweep_calibration(model, test_loader, device, EPS_LIST)
-        df_cal["arch"] = arch
-        df_cal["train_eps"] = train_eps
+        if not cal_done:
+            df_cal = sweep_calibration(model, test_loader, device, EPS_LIST)
+            df_cal["arch"] = arch
+            df_cal["train_eps"] = train_eps
+            mark_done(df_cal, arch, tag, "cal")
+            print(f"     ✓ calibración guardada")
 
-        # Reliability diagrams (at eps=0.08 for illustration)
+        # Reliability diagrams (sin checkpoint: son plots, rápidos de regenerar)
         eval_reliability_diagrams(
             model, test_loader, device,
             eps=0.08, pgd_steps=40,
@@ -53,12 +84,15 @@ for arch in ARCHS:
             training_label=tag,
         )
 
-        all_results.append((df_acc, df_cal))
+# ── Consolidar resultados finales ──────────────────────────────────────────────
 
-# Save
-os.makedirs("results", exist_ok=True)
+acc_files = sorted(glob("results/.done_*_acc.csv"))
+cal_files = sorted(glob("results/.done_*_cal.csv"))
 
-pd.concat([x[0] for x in all_results]).to_csv("results/accuracy.csv", index=False)
-pd.concat([x[1] for x in all_results]).to_csv("results/calibration.csv", index=False)
-
-print("All experiments completed.")
+if not acc_files or not cal_files:
+    print("⚠ No se encontraron resultados parciales.")
+else:
+    pd.concat([pd.read_csv(f) for f in acc_files]).to_csv("results/accuracy.csv", index=False)
+    pd.concat([pd.read_csv(f) for f in cal_files]).to_csv("results/calibration.csv", index=False)
+    print(f"\n✅ Todos los experimentos completados. "
+          f"({len(acc_files)} combinaciones arch/train_eps)")
