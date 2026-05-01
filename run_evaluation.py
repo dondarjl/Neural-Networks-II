@@ -13,6 +13,23 @@ device = get_device()
 _, test_loader, _ = get_cifar10_loaders(BATCH_SIZE)
 os.makedirs("results", exist_ok=True)
 
+# ── Subset para evaluación rápida ─────────────────────────────
+FAST_MODE = False
+FAST_FRACTION = 0.2  # 2000 imágenes en vez de 10000
+
+if FAST_MODE:
+    from torch.utils.data import Subset, DataLoader
+    import numpy as np
+
+    n = int(len(test_loader.dataset) * FAST_FRACTION)
+    idx = np.random.choice(len(test_loader.dataset), n, replace=False)
+    test_loader = DataLoader(
+        Subset(test_loader.dataset, idx),
+        batch_size=test_loader.batch_size,
+        num_workers=test_loader.num_workers,
+        pin_memory=True,
+    )
+    print(f"  ⚡ FAST_MODE: evaluando con {n} imágenes ({FAST_FRACTION*100:.0f}%)")
 # ── Helpers de reanudación ─────────────────────────────────────────────────────
 
 def checkpoint_path(arch, tag, kind):
@@ -78,7 +95,7 @@ for arch in ARCHS:
         # Reliability diagrams (sin checkpoint: son plots, rápidos de regenerar)
         eval_reliability_diagrams(
             model, test_loader, device,
-            eps=0.08, pgd_steps=40,
+            eps=0.08, pgd_steps=10,
             save_dir="plots",
             arch_name=arch,
             training_label=tag,
