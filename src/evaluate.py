@@ -36,7 +36,7 @@ def eval_attack_accuracy(model, loader, device, attack_fn):
 
 
 def sweep_attacks(model, loader, device, eps_list,
-                  pgd_steps_list=10, max_batches=None):
+                  pgd_steps_list=(10,), max_batches=None):
     """
     Devuelve un DataFrame con accuracy para múltiples
     ataques y valores de epsilon.
