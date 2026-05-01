@@ -36,7 +36,7 @@ def eval_attack_accuracy(model, loader, device, attack_fn):
 
 
 def sweep_attacks(model, loader, device, eps_list,
-                  pgd_steps_list=(10, 40), max_batches=None):
+                  pgd_steps_list=10, max_batches=None):
     """
     Devuelve un DataFrame con accuracy para múltiples
     ataques y valores de epsilon.
@@ -75,7 +75,7 @@ def sweep_attacks(model, loader, device, eps_list,
 # ─────────────────────────────────────────────
 
 def sweep_calibration(model, loader, device, eps_list,
-                      pgd_steps=40, n_bins=15):
+                      pgd_steps=10, n_bins=15):
     """
     Devuelve un DataFrame con ECE y NLL para múltiples
     ataques y valores de epsilon.
@@ -101,7 +101,7 @@ def sweep_calibration(model, loader, device, eps_list,
 
 
 def eval_reliability_diagrams(model, loader, device, eps,
-                               pgd_steps=40, save_dir="plots",
+                               pgd_steps=10, save_dir="plots",
                                arch_name="model", training_label="std"):
     """
     Genera reliability diagrams para Clean, FGSM y PGD-{pgd_steps}
