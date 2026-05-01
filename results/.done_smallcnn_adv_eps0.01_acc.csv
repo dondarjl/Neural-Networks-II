@@ -1,0 +1,14 @@
+epsilon,attack,accuracy,arch,train_eps
+0.0,Clean,0.7477,smallcnn,0.01
+0.01,Clean,0.7477,smallcnn,0.01
+0.01,FGSM,0.5363,smallcnn,0.01
+0.01,PGD-10,0.5004,smallcnn,0.01
+0.02,Clean,0.7477,smallcnn,0.01
+0.02,FGSM,0.3637,smallcnn,0.01
+0.02,PGD-10,0.2718,smallcnn,0.01
+0.04,Clean,0.7477,smallcnn,0.01
+0.04,FGSM,0.1663,smallcnn,0.01
+0.04,PGD-10,0.0461,smallcnn,0.01
+0.08,Clean,0.7477,smallcnn,0.01
+0.08,FGSM,0.0493,smallcnn,0.01
+0.08,PGD-10,0.0004,smallcnn,0.01
